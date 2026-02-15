@@ -1,0 +1,88 @@
+@using AgentLopez.Shared.Models
+
+<MudText Typo="Typo.h5" Class="mb-4">
+    @(string.IsNullOrEmpty(Provider.Id) ? "Add Provider" : "Edit Provider")
+</MudText>
+
+<MudForm @ref="_form" @bind-IsValid="@_isValid">
+    <MudGrid>
+        <MudItem xs="12">
+            <MudTextField @bind-Value="Provider.Name"
+                          Label="Name"
+                          Variant="Variant.Outlined"
+                          Required="true"
+                          RequiredError="Name is required"
+                          spellcheck="false" />
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudSelect @bind-Value="Provider.Type"
+                       Label="Provider Type"
+                       Variant="Variant.Outlined"
+                       Required="true">
+                <MudSelectItem Value="ProviderType.Anthropic">Anthropic (Claude)</MudSelectItem>
+                <MudSelectItem Value="ProviderType.OpenAI">OpenAI (ChatGPT)</MudSelectItem>
+                <MudSelectItem Value="ProviderType.Gemini">Google (Gemini)</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudTextField @bind-Value="Provider.ApiKey"
+                          Label="API Key"
+                          Variant="Variant.Outlined"
+                          InputType="@(_showApiKey ? InputType.Text : InputType.Password)"
+                          Required="true"
+                          RequiredError="API Key is required"
+                          spellcheck="false"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@(_showApiKey ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
+                          OnAdornmentClick="ToggleApiKeyVisibility" />
+        </MudItem>
+
+        <MudItem xs="12" Class="d-flex gap-2 justify-end">
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Default"
+                       OnClick="@(() => OnCancel.InvokeAsync())">
+                Cancel
+            </MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Disabled="@(!_isValid)"
+                       OnClick="HandleSave">
+                Save
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudForm>
+
+@code {
+    [Parameter]
+    public Provider Provider { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<Provider> OnSave { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private MudForm? _form;
+    private bool _isValid;
+    private bool _showApiKey;
+
+    private void ToggleApiKeyVisibility()
+    {
+        _showApiKey = !_showApiKey;
+    }
+
+    private async Task HandleSave()
+    {
+        if (_form != null)
+        {
+            await _form.Validate();
+            if (_isValid)
+            {
+                await OnSave.InvokeAsync(Provider);
+            }
+        }
+    }
+}

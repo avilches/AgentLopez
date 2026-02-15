@@ -1,0 +1,133 @@
+@page "/settings"
+@inject IProviderService ProviderService
+
+<MudText Typo="Typo.h4" Class="mb-4">Settings</MudText>
+
+<MudGrid>
+    <MudItem xs="12" md="3">
+        <MudPaper Elevation="2" Class="pa-4" Style="min-height: 400px;">
+            <MudTreeView T="string" @bind-SelectedValue="_selectedNode" Hover="true">
+                <MudTreeViewItem Value="@("providers")"
+                                 Text="Providers"
+                                 Icon="@Icons.Material.Filled.Cloud"
+                                 @bind-Expanded="_providersExpanded">
+                    @foreach (var provider in _providers)
+                    {
+                        <MudTreeViewItem Value="@($"provider-{provider.Id}")"
+                                         Text="@provider.Name"
+                                         Icon="@GetProviderIcon(provider.Type)" />
+                    }
+                </MudTreeViewItem>
+            </MudTreeView>
+            <MudButton Variant="Variant.Outlined"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       FullWidth="true"
+                       Class="mt-4"
+                       OnClick="AddNewProvider">
+                Add Provider
+            </MudButton>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" md="9">
+        <MudPaper Elevation="2" Class="pa-4" Style="min-height: 400px;">
+            @if (_isEditing)
+            {
+                <ProviderEditor Provider="_editingProvider"
+                                OnSave="SaveProvider"
+                                OnCancel="CancelEdit" />
+            }
+            else if (_selectedNode?.StartsWith("provider-") == true)
+            {
+                var provider = _providers.FirstOrDefault(p => $"provider-{p.Id}" == _selectedNode);
+                if (provider != null)
+                {
+                    <ProviderDetails Provider="provider"
+                                     OnEdit="() => EditProvider(provider)"
+                                     OnDelete="() => DeleteProvider(provider)" />
+                }
+            }
+            else
+            {
+                <MudText Typo="Typo.h6" Color="Color.Secondary" Class="d-flex justify-center align-center" Style="height: 100%;">
+                    Select a provider or add a new one
+                </MudText>
+            }
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private List<Provider> _providers = new();
+    private string? _selectedNode;
+    private bool _providersExpanded = true;
+    private bool _isEditing;
+    private Provider _editingProvider = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProviders();
+    }
+
+    private async Task LoadProviders()
+    {
+        _providers = await ProviderService.GetAllAsync();
+    }
+
+    private string GetProviderIcon(ProviderType type) => type switch
+    {
+        ProviderType.Anthropic => Icons.Material.Filled.Psychology,
+        ProviderType.OpenAI => Icons.Material.Filled.AutoAwesome,
+        ProviderType.Gemini => Icons.Material.Filled.Diamond,
+        _ => Icons.Material.Filled.Cloud
+    };
+
+    private void AddNewProvider()
+    {
+        _editingProvider = new Provider();
+        _isEditing = true;
+    }
+
+    private void EditProvider(Provider provider)
+    {
+        _editingProvider = new Provider
+        {
+            Id = provider.Id,
+            Name = provider.Name,
+            Type = provider.Type,
+            ApiKey = provider.ApiKey,
+            CachedModels = provider.CachedModels,
+            CreatedAt = provider.CreatedAt
+        };
+        _isEditing = true;
+    }
+
+    private async Task SaveProvider(Provider provider)
+    {
+        if (string.IsNullOrEmpty(provider.Id) || !_providers.Any(p => p.Id == provider.Id))
+        {
+            await ProviderService.CreateAsync(provider);
+        }
+        else
+        {
+            await ProviderService.UpdateAsync(provider);
+        }
+
+        await LoadProviders();
+        _isEditing = false;
+        _selectedNode = $"provider-{provider.Id}";
+    }
+
+    private void CancelEdit()
+    {
+        _isEditing = false;
+    }
+
+    private async Task DeleteProvider(Provider provider)
+    {
+        await ProviderService.DeleteAsync(provider.Id);
+        await LoadProviders();
+        _selectedNode = "providers";
+    }
+}

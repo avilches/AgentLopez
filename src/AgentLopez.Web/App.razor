@@ -1,0 +1,13 @@
+<Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new[] { typeof(AgentLopez.Shared.Pages.HomePage).Assembly }">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(AgentLopez.Shared.Layouts.MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <LayoutView Layout="@typeof(AgentLopez.Shared.Layouts.MainLayout)">
+            <MudText Typo="Typo.h4" Color="Color.Error">Page not found</MudText>
+            <MudText>Sorry, there's nothing at this address.</MudText>
+        </LayoutView>
+    </NotFound>
+</Router>

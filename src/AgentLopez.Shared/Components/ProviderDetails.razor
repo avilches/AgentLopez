@@ -1,0 +1,117 @@
+@using AgentLopez.Shared.Models
+
+<MudStack Spacing="4">
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+        <MudText Typo="Typo.h5">@Provider.Name</MudText>
+        <MudStack Row="true" Spacing="2">
+            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                           Color="Color.Primary"
+                           OnClick="@(() => OnEdit.InvokeAsync())" />
+            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                           Color="Color.Error"
+                           OnClick="HandleDelete" />
+        </MudStack>
+    </MudStack>
+
+    <MudDivider />
+
+    <MudGrid>
+        <MudItem xs="12" sm="6">
+            <MudText Typo="Typo.caption" Color="Color.Secondary">Type</MudText>
+            <MudChip T="string"
+                     Color="@GetProviderColor(Provider.Type)"
+                     Size="Size.Small">
+                @GetProviderDisplayName(Provider.Type)
+            </MudChip>
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudText Typo="Typo.caption" Color="Color.Secondary">API Key</MudText>
+            <MudText Typo="Typo.body1">@MaskApiKey(Provider.ApiKey)</MudText>
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudText Typo="Typo.caption" Color="Color.Secondary">Created</MudText>
+            <MudText Typo="Typo.body1">@Provider.CreatedAt.ToString("g")</MudText>
+        </MudItem>
+
+        <MudItem xs="12" sm="6">
+            <MudText Typo="Typo.caption" Color="Color.Secondary">Updated</MudText>
+            <MudText Typo="Typo.body1">@Provider.UpdatedAt.ToString("g")</MudText>
+        </MudItem>
+
+        @if (Provider.CachedModels.Any())
+        {
+            <MudItem xs="12">
+                <MudText Typo="Typo.caption" Color="Color.Secondary">Cached Models</MudText>
+                <MudChipSet T="string" ReadOnly="true">
+                    @foreach (var model in Provider.CachedModels)
+                    {
+                        <MudChip T="string" Size="Size.Small">@model</MudChip>
+                    }
+                </MudChipSet>
+            </MudItem>
+        }
+    </MudGrid>
+</MudStack>
+
+<MudDialog @bind-Visible="_deleteDialogVisible">
+    <TitleContent>
+        <MudText Typo="Typo.h6">Delete Provider</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText>Are you sure you want to delete "@Provider.Name"?</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="@(() => _deleteDialogVisible = false)">Cancel</MudButton>
+        <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="ConfirmDelete">Delete</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter]
+    public Provider Provider { get; set; } = new();
+
+    [Parameter]
+    public EventCallback OnEdit { get; set; }
+
+    [Parameter]
+    public EventCallback OnDelete { get; set; }
+
+    private bool _deleteDialogVisible;
+
+    private string GetProviderDisplayName(ProviderType type) => type switch
+    {
+        ProviderType.Anthropic => "Anthropic (Claude)",
+        ProviderType.OpenAI => "OpenAI (ChatGPT)",
+        ProviderType.Gemini => "Google (Gemini)",
+        _ => type.ToString()
+    };
+
+    private Color GetProviderColor(ProviderType type) => type switch
+    {
+        ProviderType.Anthropic => Color.Warning,
+        ProviderType.OpenAI => Color.Success,
+        ProviderType.Gemini => Color.Info,
+        _ => Color.Default
+    };
+
+    private string MaskApiKey(string apiKey)
+    {
+        if (string.IsNullOrEmpty(apiKey) || apiKey.Length < 8)
+            return "****";
+
+        return apiKey[..4] + new string('*', apiKey.Length - 8) + apiKey[^4..];
+    }
+
+    private void HandleDelete()
+    {
+        _deleteDialogVisible = true;
+    }
+
+    private async Task ConfirmDelete()
+    {
+        _deleteDialogVisible = false;
+        await OnDelete.InvokeAsync();
+    }
+}

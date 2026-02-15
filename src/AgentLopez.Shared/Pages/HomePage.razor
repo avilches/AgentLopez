@@ -1,0 +1,78 @@
+@page "/"
+
+<MudText Typo="Typo.h3" GutterBottom="true">Welcome to AgentLopez</MudText>
+
+<MudText Typo="Typo.body1" Class="mb-4">
+    A multi-platform AI agent application that connects to ChatGPT, Gemini, and Claude.
+</MudText>
+
+<MudGrid>
+    <MudItem xs="12" sm="6" md="4">
+        <MudCard Elevation="2">
+            <MudCardHeader>
+                <CardHeaderAvatar>
+                    <MudIcon Icon="@Icons.Material.Filled.Settings" Color="Color.Primary" />
+                </CardHeaderAvatar>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Configure Providers</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudText Typo="Typo.body2">
+                    Set up your API keys for Anthropic, OpenAI, or Google Gemini to start using AI agents.
+                </MudText>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Href="/settings" Variant="Variant.Text" Color="Color.Primary">
+                    Go to Settings
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="4">
+        <MudCard Elevation="2">
+            <MudCardHeader>
+                <CardHeaderAvatar>
+                    <MudIcon Icon="@Icons.Material.Filled.SmartToy" Color="Color.Secondary" />
+                </CardHeaderAvatar>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Create Agents</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudText Typo="Typo.body2">
+                    Define custom AI agents with specific system prompts and configurations.
+                </MudText>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Href="/agents" Variant="Variant.Text" Color="Color.Primary" Disabled="true">
+                    Coming Soon
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="4">
+        <MudCard Elevation="2">
+            <MudCardHeader>
+                <CardHeaderAvatar>
+                    <MudIcon Icon="@Icons.Material.Filled.Chat" Color="Color.Tertiary" />
+                </CardHeaderAvatar>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Start Chatting</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudText Typo="Typo.body2">
+                    Open chat sessions with your configured agents and interact with AI.
+                </MudText>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Href="/chat" Variant="Variant.Text" Color="Color.Primary" Disabled="true">
+                    Coming Soon
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudItem>
+</MudGrid>
