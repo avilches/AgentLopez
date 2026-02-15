@@ -1,17 +1,23 @@
 using System.Text.Json;
+using Microsoft.Extensions.Options;
 using AgentLopez.Shared.Models;
 
 namespace AgentLopez.API.Services;
+
+using AgentLopez.API;
 
 public class WorkspaceService
 {
     private readonly string _workspacePath;
     private readonly JsonSerializerOptions _jsonOptions;
 
-    public WorkspaceService()
+    public WorkspaceService(IOptions<ApiSettings> options)
     {
+        // Priority: WORKSPACE env var > ApiSettings.Workspace
         _workspacePath = Environment.GetEnvironmentVariable("WORKSPACE")
-            ?? throw new InvalidOperationException("WORKSPACE environment variable is not set");
+            ?? (string.IsNullOrEmpty(options.Value.Workspace)
+                ? throw new InvalidOperationException("WORKSPACE environment variable or ApiSettings.Workspace must be set")
+                : options.Value.Workspace);
 
         _jsonOptions = new JsonSerializerOptions
         {

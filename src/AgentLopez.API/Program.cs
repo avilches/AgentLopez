@@ -1,8 +1,13 @@
+using Microsoft.Extensions.Options;
+using AgentLopez.API;
 using AgentLopez.API.Services;
 using AgentLopez.Shared.Models;
 using AgentLopez.Shared.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Register ApiSettings from configuration (appsettings.json + environment variables)
+builder.Services.Configure<ApiSettings>(builder.Configuration);
 
 builder.Services.AddOpenApi();
 builder.Services.AddCors(options => {
@@ -25,8 +30,8 @@ if (app.Environment.IsDevelopment()) {
 
 app.UseCors("AllowAll");
 
-// API Key middleware
-var apiKey = builder.Configuration["ApiKey"] ?? "dev-api-key";
+// API Key middleware - reads from ApiSettings
+var settings = app.Services.GetRequiredService<IOptions<ApiSettings>>().Value;
 app.Use(async (context, next) => {
     // Skip API key check for CORS preflight requests
     if (context.Request.Method == "OPTIONS") {
@@ -36,7 +41,7 @@ app.Use(async (context, next) => {
 
     if (context.Request.Path.StartsWithSegments("/api")) {
         if (!context.Request.Headers.TryGetValue("X-API-Key", out var extractedApiKey) ||
-            extractedApiKey != apiKey) {
+            extractedApiKey != settings.ApiKey) {
             context.Response.StatusCode = 401;
             await context.Response.WriteAsync("Invalid API Key");
             return;
